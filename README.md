@@ -4,14 +4,17 @@ I started this project to create a backend for a social media network. In creati
 
 ## Table of Contents
 
-- [Screenshots](#Screenshots)
+- [Demo Video](#Demo)
 - [Installation](#installation)
-- [Deployment](#deployment)
 - [Authors](#authors)
 - [Badges](#badges)
 - [License](#license)
 
-## Demo Video
+## Demo
+
+
+https://github.com/collinshepherd/social-network-backend/assets/77903396/56061d30-b4eb-4ce1-ab7d-e2b5c8228875
+
 
 ## Installation
 
