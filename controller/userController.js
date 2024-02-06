@@ -1,10 +1,11 @@
-const { User, Thought } = require("../models");
+const User = require("../models/User");
+const Thought = require("../models/Thought");
 
 module.exports = {
   // Get all users
   async getUsers(req, res) {
     try {
-      const user = await User.find();
+      const user = await User.find().select("-__v");
 
       const userObj = {
         user,
@@ -21,7 +22,10 @@ module.exports = {
     try {
       const user = await User.findOne({
         _id: req.params.userId,
-      }).select("-__v");
+      })
+        .select("-__v")
+        .populate("thoughts")
+        .populate("friends");
 
       if (!user) {
         return res.status(404).json({ message: "No user with that ID" });
@@ -44,10 +48,27 @@ module.exports = {
       res.status(500).json(err);
     }
   },
+  // update a user
+  async updateUser(req, res) {
+    try {
+      const user = await User.findOneAndUpdate(
+        { _id: req.params.userId },
+        req.body,
+        {
+          runValidators: true,
+          new: true,
+        }
+      );
+
+      res.json(user);
+    } catch (err) {
+      res.status(500).json(err);
+    }
+  },
   // Delete a user and remove their thoughts
   async deleteUser(req, res) {
     try {
-      const user = await User.findOneAndRemove({
+      const user = await User.findOneAndDelete({
         _id: req.params.userId,
       });
 
@@ -55,11 +76,7 @@ module.exports = {
         return res.status(404).json({ message: "No such user exists" });
       }
 
-      const thought = await Thought.findOneAndUpdate(
-        { users: req.params.userId },
-        { $pull: { users: req.params.userId } },
-        { new: true }
-      );
+      const thought = await Thought.deleteMany({ _id: { $in: user.thoughts } });
 
       if (!thought) {
         return res.status(404).json({
@@ -70,48 +87,6 @@ module.exports = {
       res.json({ message: "Student successfully deleted" });
     } catch (err) {
       console.log(err);
-      res.status(500).json(err);
-    }
-  },
-
-  // Add a thought to a user
-  async addThought(req, res) {
-    console.log("You are adding an thought");
-    console.log(req.body);
-
-    try {
-      const user = await User.findOneAndUpdate(
-        { _id: req.params.userId },
-        { $addToSet: { thoughts: req.body } }
-      );
-
-      if (!user) {
-        return res
-          .status(404)
-          .json({ message: "No user found with that ID :(" });
-      }
-
-      res.json(user);
-    } catch (err) {
-      res.status(500).json(err);
-    }
-  },
-  // Remove thought from a user
-  async removeThought(req, res) {
-    try {
-      const user = await User.findOneAndUpdate(
-        { _id: req.params.userId },
-        { $pull: { thought: { thoughtId: req.params.thoughtId } } }
-      );
-
-      if (!user) {
-        return res
-          .status(404)
-          .json({ message: "No user found with that ID :(" });
-      }
-
-      res.json(user);
-    } catch (err) {
       res.status(500).json(err);
     }
   },

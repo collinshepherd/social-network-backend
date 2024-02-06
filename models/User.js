@@ -1,4 +1,4 @@
-const { Schema, Types } = require("mongoose");
+const { Schema, Types, model } = require("mongoose");
 
 const userSchema = new Schema(
   {
@@ -19,10 +19,12 @@ const userSchema = new Schema(
       },
       required: [true, "Email required"],
     },
-    thoughts: {
-      type: Schema.Types.ObjectId,
-      ref: "Thought",
-    },
+    thoughts: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "Thought",
+      },
+    ],
     friends: [
       {
         type: Schema.Types.ObjectId,
@@ -38,6 +40,10 @@ const userSchema = new Schema(
   }
 );
 
-const User = model("user", userSchema);
+userSchema.virtual("friendCount").get(function () {
+  return this.friends.length;
+});
+
+const User = model("User", userSchema);
 
 module.exports = User;
